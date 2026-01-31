@@ -6,20 +6,21 @@ import 'package:http/http.dart' as http;
 
 class ApiServices {
   Future<List<PostModel>> getAllPost() async {
-    List<PostModel> posts = [];
     try {
       final baseUrl = Uri.parse('https://jsonplaceholder.typicode.com/posts');
       final response = await http.get(baseUrl);
-      developer.log(response.body);
 
-      var postList = jsonDecode(response.body.toString());
-
-      if (response.statusCode == 200) {
-        for (var post in postList) {
-          posts.add(PostModel.fromJson(post as Map<String, dynamic>));
-        }
+      if (response.statusCode != 200) {
+        developer.log('Failed : ${response.statusCode}');
+        return [];
       }
-      return posts;
+
+      final List<dynamic> posts = jsonDecode(response.body);
+
+      return posts
+          .whereType<Map<String, dynamic>>()
+          .map((post) => PostModel.fromJson(post))
+          .toList();
     } catch (e) {
       developer.log(e.toString());
       return [];
